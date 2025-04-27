@@ -11,16 +11,7 @@ GeoLocator::GeoLocator(const IGeoRecordProvider& provider)
 }
 
 void GeoLocator::refresh() {
-    buildIndex(provider_.getRecords());
-}
-
-void GeoLocator::buildIndex(const std::vector<common::GeoRecord>& records) {
-    records_ = records;
-
-    // Sort all records by start IP for efficient lookup
-    std::sort(records_.begin(), records_.end(), [](const auto& a, const auto& b) {
-        return a.startIp < b.startIp;
-    });
+    records_ = provider_.getRecords();
 }
 
 std::optional<std::pair<std::string, std::string>> GeoLocator::lookup(const std::string& ipStr) const {

@@ -28,10 +28,6 @@ public:
     std::optional<std::pair<std::string, std::string>> lookup(const std::string& ipStr) const;
 
 private:
-    /// @brief Builds an index structure from a list of geolocation records.
-    /// @param records The list of GeoRecords to build the index from.
-    void buildIndex(const std::vector<common::GeoRecord>& records);
-
     /// @brief Parses an IP address string into a 32-bit unsigned integer.
     /// @param ipStr IP address string.
     /// @return Parsed 32-bit representation of the IP address.
