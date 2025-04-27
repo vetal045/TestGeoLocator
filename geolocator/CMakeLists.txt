@@ -11,7 +11,7 @@ add_executable(geolocator
     command/handlers/LookupCommandHandler.cpp
     command/handlers/ExitCommandHandler.cpp
     factory/ConcreteCommandFactory.cpp
-    service/GeoService.cpp
+    service/CommandService.cpp
 )
 
 target_sources(geolocator PRIVATE

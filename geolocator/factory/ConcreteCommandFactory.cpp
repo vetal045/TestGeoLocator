@@ -3,7 +3,7 @@
 #include "command/handlers/LookupCommandHandler.h"
 #include "command/handlers/ExitCommandHandler.h"
 
-namespace geolocator::factory {
+namespace geolocation::factory {
 
 ConcreteCommandFactory::ConcreteCommandFactory(const std::string& databasePath,
                                                const std::shared_ptr<geolocation::locator::VectorGeoRecordProvider>& provider,

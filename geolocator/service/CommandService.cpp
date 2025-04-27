@@ -1,15 +1,15 @@
-#include "GeoService.h"
+#include "CommandService.h"
 
 namespace geolocation::service {
 
-GeoService::GeoService(std::unique_ptr<interfaces::ICommandFactory> factory)
+CommandService::CommandService(std::unique_ptr<interfaces::ICommandFactory> factory)
     : factory_(std::move(factory)) {}
 
-void GeoService::registerCommand(const std::string& command) {
+void CommandService::registerCommand(const std::string& command) {
     handlers_[command] = factory_->createHandler(command);
 }
 
-std::string GeoService::handleCommand(const command::ParsedCommand& command) {
+std::string CommandService::handleCommand(const command::ParsedCommand& command) {
     auto it = handlers_.find(command.command);
     if (it == handlers_.end()) {
         return "ERR\n";
@@ -24,7 +24,7 @@ std::string GeoService::handleCommand(const command::ParsedCommand& command) {
     return response;
 }
 
-bool GeoService::shouldExit() const {
+bool CommandService::shouldExit() const {
     return exit_;
 }
 

@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-namespace geolocator::factory {
+namespace geolocation::factory {
 
 /// @brief Concrete factory for creating command handlers based on command names.
 class ConcreteCommandFactory : public geolocation::interfaces::ICommandFactory {

@@ -6,8 +6,6 @@
 #include <algorithm>
 #include <filesystem>
 
-#include <iostream>
-
 namespace geolocation::command::handlers {
 
 namespace fs = std::filesystem;

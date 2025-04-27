@@ -10,10 +10,10 @@
 namespace geolocation::service {
 
 /// @brief Handles dispatching commands to appropriate handlers.
-class GeoService {
+class CommandService {
 public:
-    /// @brief Constructs GeoService with a given command factory.
-    GeoService(std::unique_ptr<interfaces::ICommandFactory> factory);
+    /// @brief Constructs CommandService with a given command factory.
+    CommandService(std::unique_ptr<interfaces::ICommandFactory> factory);
 
     /// @brief Registers a command by its name.
     /// @param command Name of the command.

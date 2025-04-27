@@ -4,8 +4,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-
-#include <iostream>
 #include <vector>
 
 namespace geolocation::loaders {
@@ -17,13 +15,11 @@ std::vector<GeoRecord> BinaryGeoDatabaseLoader::load(const std::string& path) co
 
     int fd = open(path.c_str(), O_RDONLY);
     if (fd == -1) {
-        std::cerr << "Failed to open .geo file: " << path << '\n';
         return records;
     }
 
     struct stat sb{};
     if (fstat(fd, &sb) == -1) {
-        std::cerr << "Failed to get file size: " << path << '\n';
         close(fd);
         return records;
     }
@@ -36,7 +32,6 @@ std::vector<GeoRecord> BinaryGeoDatabaseLoader::load(const std::string& path) co
 
     void* mapped = mmap(nullptr, fileSize, PROT_READ, MAP_PRIVATE, fd, 0);
     if (mapped == MAP_FAILED) {
-        std::cerr << "Failed to mmap file: " << path << '\n';
         close(fd);
         return records;
     }
@@ -46,7 +41,6 @@ std::vector<GeoRecord> BinaryGeoDatabaseLoader::load(const std::string& path) co
 
     while (ptr < end) {
         if (static_cast<size_t>(end - ptr) < sizeof(uint32_t) * 2 + sizeof(uint16_t) * 2) {
-            std::cerr << "Corrupted .geo file: header too small\n";
             break;
         }
 
@@ -56,7 +50,6 @@ std::vector<GeoRecord> BinaryGeoDatabaseLoader::load(const std::string& path) co
         uint16_t cityLen = *reinterpret_cast<const uint16_t*>(ptr); ptr += sizeof(uint16_t);
 
         if (static_cast<size_t>(end - ptr) < countryLen + cityLen) {
-            std::cerr << "Corrupted .geo file: invalid strings length\n";
             break;
         }
 

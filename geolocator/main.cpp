@@ -1,4 +1,4 @@
-#include "service/GeoService.h"
+#include "service/CommandService.h"
 #include "factory/ConcreteCommandFactory.h"
 #include "command/CommandParser.h"
 #include "command/ParsedCommand.h"
@@ -22,15 +22,15 @@ int main(int argc, char* argv[]) {
 
     auto provider = std::make_shared<locator::VectorGeoRecordProvider>(std::vector<common::GeoRecord>{});
     auto locator = std::make_shared<locator::GeoLocator>(*provider);
-    auto commandFactory = std::make_unique<geolocator::factory::ConcreteCommandFactory>(databasePath, provider, locator);
+    auto commandFactory = std::make_unique<geolocation::factory::ConcreteCommandFactory>(databasePath, provider, locator);
 
-    service::GeoService geoService(std::move(commandFactory));
+    service::CommandService сommandService(std::move(commandFactory));
 
     std::cout << "READY" << std::endl;
 
-    geoService.registerCommand("LOAD");
-    geoService.registerCommand("LOOKUP");
-    geoService.registerCommand("EXIT");
+    сommandService.registerCommand("LOAD");
+    сommandService.registerCommand("LOOKUP");
+    сommandService.registerCommand("EXIT");
 
     std::string line;
     while (std::getline(std::cin, line)) {
@@ -41,9 +41,9 @@ int main(int argc, char* argv[]) {
             continue;
         }
 
-        std::cout << geoService.handleCommand(parsed.value());
+        std::cout << сommandService.handleCommand(parsed.value());
 
-        if (geoService.shouldExit()) {
+        if (сommandService.shouldExit()) {
             break;
         }
     }
