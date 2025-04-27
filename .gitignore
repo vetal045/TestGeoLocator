@@ -27,7 +27,3 @@ __pycache__/
 
 # Ignore generated documentation
 docs/html/
-
-# Data folder: allow empty folder via .gitkeep
-#data/*
-!data/.gitkeep
