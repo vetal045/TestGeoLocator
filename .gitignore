@@ -1,14 +1,14 @@
-# Ignore build artifacts
+# Build artifacts
 /build/
 /build/**
 
-# Ignore CMake files
+# CMake generated files
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
 Makefile
 
-# Ignore project-specific generated files
+# Object files and executables
 *.o
 *.obj
 *.so
@@ -17,17 +17,17 @@ Makefile
 *.out
 *.log
 
-# Ignore Python cache files (если есть тесты на питоне)
+# Python cache files
 __pycache__/
 *.pyc
 *.pyo
 
-# Ignore MacOS system files
+# MacOS system files
 .DS_Store
 
-# Ignore large database file
-data/database.csv
-data/database.csv.gz
+# Ignore generated documentation
+docs/html/
 
-# Optional: Ignore all .gz files if не хочешь их заливать вообще
-# *.gz
+# Data folder: allow empty folder via .gitkeep
+data/*
+!data/.gitkeep
