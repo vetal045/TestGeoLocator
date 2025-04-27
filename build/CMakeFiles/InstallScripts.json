@@ -1,0 +1,13 @@
+{
+	"InstallScripts" : 
+	[
+		"/Users/vitaliiryzhov/Desktop/geolocation/TestGeoLocator/build/cmake_install.cmake",
+		"/Users/vitaliiryzhov/Desktop/geolocation/TestGeoLocator/build/geolocator/cmake_install.cmake",
+		"/Users/vitaliiryzhov/Desktop/geolocation/TestGeoLocator/build/preprocessor/cmake_install.cmake",
+		"/Users/vitaliiryzhov/Desktop/geolocation/TestGeoLocator/build/tests/cmake_install.cmake",
+		"/Users/vitaliiryzhov/Desktop/geolocation/TestGeoLocator/build/_deps/googletest-build/cmake_install.cmake",
+		"/Users/vitaliiryzhov/Desktop/geolocation/TestGeoLocator/build/_deps/googletest-build/googlemock/cmake_install.cmake",
+		"/Users/vitaliiryzhov/Desktop/geolocation/TestGeoLocator/build/_deps/googletest-build/googletest/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
