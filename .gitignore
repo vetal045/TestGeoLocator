@@ -29,5 +29,5 @@ __pycache__/
 docs/html/
 
 # Data folder: allow empty folder via .gitkeep
-data/*
+#data/*
 !data/.gitkeep
