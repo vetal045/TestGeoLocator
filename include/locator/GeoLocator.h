@@ -1,37 +1,44 @@
 #pragma once
 
-#include "common/ChunkInfo.h"
 #include "locator/IGeoRecordProvider.h"
+#include "common/GeoRecord.h"
 
-#include <string>
 #include <vector>
 #include <optional>
-#include <utility>
+#include <string>
 
 namespace geolocation::locator {
 
-/// @brief Service for efficient geolocation lookup based on IP address.
+/// @brief Service for efficient IP geolocation lookup.
+/// 
+/// Uses an efficient data structure for quick mapping of IPv4 addresses
+/// to their corresponding country code and city name.
 class GeoLocator {
 public:
-    /// @brief Constructs GeoLocator using the provided record provider.
+    /// @brief Constructs a GeoLocator using a provided record provider.
     /// @param provider Record provider supplying geolocation records.
     explicit GeoLocator(const IGeoRecordProvider& provider);
 
-    /// @brief Performs IP address lookup.
-    /// @param ipStr IP address in dotted string format.
-    /// @return Pair of (country code, city) if found, std::nullopt otherwise.
+    /// @brief Refreshes and rebuilds the internal lookup index from provider records.
+    void refresh();
+
+    /// @brief Performs a lookup of the given IP address.
+    /// @param ipStr IP address in dotted decimal format (e.g., "192.168.1.1").
+    /// @return A pair (country code, city) if found, std::nullopt otherwise.
     std::optional<std::pair<std::string, std::string>> lookup(const std::string& ipStr) const;
 
-    /// @brief Rebuilds internal chunk structure from the provider's records.
-    void refresh();
 private:
+    /// @brief Builds an index structure from a list of geolocation records.
+    /// @param records The list of GeoRecords to build the index from.
+    void buildIndex(const std::vector<common::GeoRecord>& records);
 
-    /// @brief Builds chunks from the given list of records.
-    /// @param records List of geolocation records.
-    void buildChunks(const std::vector<common::GeoRecord>& records);
+    /// @brief Parses an IP address string into a 32-bit unsigned integer.
+    /// @param ipStr IP address string.
+    /// @return Parsed 32-bit representation of the IP address.
+    uint32_t parseIp(const std::string& ipStr) const;
 
-    const IGeoRecordProvider& provider_; ///< Source of geolocation records.
-    std::vector<common::ChunkInfo> chunks_; ///< Chunks of sorted geolocation records.
+    const IGeoRecordProvider& provider_; ///< The provider that supplies GeoRecords.
+    std::vector<common::GeoRecord> records_; ///< Flat list of GeoRecords sorted by startIp.
 };
 
 } // namespace geolocation::locator
