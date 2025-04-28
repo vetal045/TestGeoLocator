@@ -24,13 +24,13 @@ int main(int argc, char* argv[]) {
     auto locator = std::make_shared<locator::GeoLocator>(*provider);
     auto commandFactory = std::make_unique<geolocation::factory::ConcreteCommandFactory>(databasePath, provider, locator);
 
-    service::CommandService сommandService(std::move(commandFactory));
+    service::CommandService commandService(std::move(commandFactory));
 
     std::cout << "READY" << std::endl;
 
-    сommandService.registerCommand("LOAD");
-    сommandService.registerCommand("LOOKUP");
-    сommandService.registerCommand("EXIT");
+    commandService.registerCommand("LOAD");
+    commandService.registerCommand("LOOKUP");
+    commandService.registerCommand("EXIT");
 
     std::string line;
     while (std::getline(std::cin, line)) {
@@ -41,9 +41,9 @@ int main(int argc, char* argv[]) {
             continue;
         }
 
-        std::cout << сommandService.handleCommand(parsed.value());
+        std::cout << commandService.handleCommand(parsed.value());
 
-        if (сommandService.shouldExit()) {
+        if (commandService.shouldExit()) {
             break;
         }
     }
