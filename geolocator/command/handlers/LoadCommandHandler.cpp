@@ -1,7 +1,7 @@
 #include "LoadCommandHandler.h"
 #include "CsvGeoPreprocessorSource.h"
-#include "loaders/BinaryGeoDatabaseLoader.h"
-#include "locator/GeoLocator.h"
+#include "BinaryGeoDatabaseLoader.h"
+#include "GeoLocator.h"
 
 #include <algorithm>
 #include <filesystem>

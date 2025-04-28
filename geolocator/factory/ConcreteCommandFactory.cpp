@@ -1,7 +1,7 @@
 #include "ConcreteCommandFactory.h"
-#include "command/handlers/LoadCommandHandler.h"
-#include "command/handlers/LookupCommandHandler.h"
-#include "command/handlers/ExitCommandHandler.h"
+#include "LoadCommandHandler.h"
+#include "LookupCommandHandler.h"
+#include "ExitCommandHandler.h"
 
 namespace geolocation::factory {
 

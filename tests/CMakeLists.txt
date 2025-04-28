@@ -23,9 +23,9 @@ add_executable(tests
 
     ${CMAKE_SOURCE_DIR}/preprocessor/GeoPreprocessor.cpp
     ${CMAKE_SOURCE_DIR}/preprocessor/CsvGeoPreprocessorSource.cpp
-    ${CMAKE_SOURCE_DIR}/src/loaders/BinaryGeoDatabaseLoader.cpp
-    ${CMAKE_SOURCE_DIR}/src/locator/GeoLocator.cpp
-    ${CMAKE_SOURCE_DIR}/src/locator/VectorGeoRecordProvider.cpp
+    ${CMAKE_SOURCE_DIR}/geolocator/loaders/BinaryGeoDatabaseLoader.cpp
+    ${CMAKE_SOURCE_DIR}/geolocator/locator/GeoLocator.cpp
+    ${CMAKE_SOURCE_DIR}/geolocator/locator/VectorGeoRecordProvider.cpp
     ${CMAKE_SOURCE_DIR}/geolocator/command/CommandParser.cpp
     ${CMAKE_SOURCE_DIR}/geolocator/command/handlers/LoadCommandHandler.cpp
     ${CMAKE_SOURCE_DIR}/geolocator/command/handlers/LookupCommandHandler.cpp
@@ -35,10 +35,17 @@ add_executable(tests
 )
 
 target_include_directories(tests PRIVATE
-    ${CMAKE_SOURCE_DIR}/geolocator
-    ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/preprocessor
-    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../geolocator
+    ${CMAKE_CURRENT_SOURCE_DIR}/../geolocator/common
+    ${CMAKE_CURRENT_SOURCE_DIR}/../geolocator/locator
+    ${CMAKE_CURRENT_SOURCE_DIR}/../geolocator/loaders
+    ${CMAKE_CURRENT_SOURCE_DIR}/../geolocator/command
+    ${CMAKE_CURRENT_SOURCE_DIR}/../geolocator/command/handlers
+    ${CMAKE_CURRENT_SOURCE_DIR}/../geolocator/factory
+    ${CMAKE_CURRENT_SOURCE_DIR}/../geolocator/interfaces
+    ${CMAKE_CURRENT_SOURCE_DIR}/../geolocator/service
+    ${CMAKE_CURRENT_SOURCE_DIR}/../preprocessor
 )
 
 target_link_libraries(tests

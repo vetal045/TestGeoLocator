@@ -1,7 +1,7 @@
 #pragma once
 
-#include "interfaces/ICommandFactory.h"
-#include "interfaces/ICommandHandler.h"
+#include "ICommandFactory.h"
+#include "ICommandHandler.h"
 
 #include <memory>
 #include <unordered_map>

@@ -1,4 +1,4 @@
-#include "locator/GeoLocator.h"
+#include "GeoLocator.h"
 
 #include <algorithm>
 #include <stdexcept>

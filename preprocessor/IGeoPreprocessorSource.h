@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/GeoRecord.h"
+#include "GeoRecord.h"
 #include <string>
 #include <vector>
 

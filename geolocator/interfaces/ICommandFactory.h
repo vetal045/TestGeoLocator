@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ICommandHandler.h"
-#include "command/ParsedCommand.h"
+#include "ParsedCommand.h"
 
 #include <memory>
 #include <string>

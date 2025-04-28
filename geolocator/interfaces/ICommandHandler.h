@@ -1,6 +1,6 @@
 #pragma once
 
-#include "command/ParsedCommand.h"
+#include "ParsedCommand.h"
 
 #include <string>
 

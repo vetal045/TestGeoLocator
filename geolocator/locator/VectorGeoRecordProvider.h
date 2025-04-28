@@ -1,6 +1,6 @@
 #pragma once
 
-#include "locator/IGeoRecordProvider.h"
+#include "IGeoRecordProvider.h"
 
 namespace geolocation::locator {
 

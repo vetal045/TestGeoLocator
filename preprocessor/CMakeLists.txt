@@ -5,5 +5,6 @@ add_executable(preprocessor
 )
 
 target_include_directories(preprocessor PRIVATE
-    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../geolocator/common
 )

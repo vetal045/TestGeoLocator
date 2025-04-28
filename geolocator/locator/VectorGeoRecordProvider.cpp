@@ -1,4 +1,4 @@
-#include "locator/VectorGeoRecordProvider.h"
+#include "VectorGeoRecordProvider.h"
 
 namespace geolocation::locator {
 

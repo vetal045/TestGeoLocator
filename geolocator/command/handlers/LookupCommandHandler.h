@@ -1,8 +1,8 @@
 #pragma once
 
-#include "interfaces/ICommandHandler.h"
-#include "locator/GeoLocator.h"
-#include "command/ParsedCommand.h"
+#include "ICommandHandler.h"
+#include "GeoLocator.h"
+#include "ParsedCommand.h"
 
 #include <memory>
 

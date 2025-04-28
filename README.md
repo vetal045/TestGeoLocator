@@ -63,17 +63,17 @@ Use the unified `build.py` script for all operations.
 
 Typical full clean rebuild:
 ```bash
-python build.py --full-rebuild --build-only
+python3 build.py --full-rebuild --build-only
 ```
 
 Other useful commands:
 
 | Purpose | Command |
 |:--------|:--------|
-| Build without cleaning | `python build.py --build-only` |
-| Build and run unit tests | `python build.py --test` |
-| Build only preprocessor tool | `python build.py --preprocessor` |
-| Generate Doxygen documentation | `python build.py --docs` |
+| Build without cleaning | `python3 build.py --build-only` |
+| Build and run unit tests | `python3 build.py --test` |
+| Build only preprocessor tool | `python3 build.py --preprocessor` |
+| Generate Doxygen documentation | `python3 build.py --docs` |
 
 **Note:**
 - `build.py` automatically detects OS and chooses `windows-release` or `macos-release` CMake preset.
@@ -130,7 +130,7 @@ The provided `geolocation_test.py` script validates protocol compatibility and m
 ### Example Command:
 
 ```bash
-python geolocation_test.py --executable ./build/geolocator/geolocator --database ./data/database.geo
+python3 geolocation_test.py --executable ./build/geolocator/geolocator --database ./data/database.geo
 ```
 
 ### Sample Output:

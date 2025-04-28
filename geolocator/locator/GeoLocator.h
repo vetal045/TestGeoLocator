@@ -1,7 +1,7 @@
 #pragma once
 
-#include "locator/IGeoRecordProvider.h"
-#include "common/GeoRecord.h"
+#include "IGeoRecordProvider.h"
+#include "GeoRecord.h"
 
 #include <vector>
 #include <optional>

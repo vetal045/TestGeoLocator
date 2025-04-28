@@ -12,26 +12,23 @@ add_executable(geolocator
     command/handlers/ExitCommandHandler.cpp
     factory/ConcreteCommandFactory.cpp
     service/CommandService.cpp
-)
-
-target_sources(geolocator PRIVATE
-    ../src/locator/GeoLocator.cpp
-    ../src/locator/VectorGeoRecordProvider.cpp
-    ../src/loaders/BinaryGeoDatabaseLoader.cpp
+    locator/GeoLocator.cpp
+    locator/VectorGeoRecordProvider.cpp
+    loaders/BinaryGeoDatabaseLoader.cpp
     ../preprocessor/CsvGeoPreprocessorSource.cpp
 )
 
 target_include_directories(geolocator PRIVATE
-    ../include
-    ../src/locator
-    ../src/loaders
-    ../preprocessor
-    .
-    command
-    command/handlers
-    factory
-    interfaces
-    service
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/common
+    ${CMAKE_CURRENT_SOURCE_DIR}/locator
+    ${CMAKE_CURRENT_SOURCE_DIR}/loaders
+    ${CMAKE_CURRENT_SOURCE_DIR}/../preprocessor
+    ${CMAKE_CURRENT_SOURCE_DIR}/command
+    ${CMAKE_CURRENT_SOURCE_DIR}/command/handlers
+    ${CMAKE_CURRENT_SOURCE_DIR}/factory
+    ${CMAKE_CURRENT_SOURCE_DIR}/interfaces
+    ${CMAKE_CURRENT_SOURCE_DIR}/service
 )
 
 set_target_properties(geolocator PROPERTIES

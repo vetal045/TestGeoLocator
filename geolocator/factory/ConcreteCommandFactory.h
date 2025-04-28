@@ -1,8 +1,8 @@
 #pragma once
 
-#include "interfaces/ICommandFactory.h"
-#include "locator/VectorGeoRecordProvider.h"
-#include "locator/GeoLocator.h"
+#include "ICommandFactory.h"
+#include "VectorGeoRecordProvider.h"
+#include "GeoLocator.h"
 
 #include <memory>
 #include <string>

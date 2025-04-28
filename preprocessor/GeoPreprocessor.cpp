@@ -1,5 +1,5 @@
 #include "GeoPreprocessor.h"
-#include "common/GeoRecord.h"
+#include "GeoRecord.h"
 
 #include <fstream>
 #include <iostream>

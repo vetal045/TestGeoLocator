@@ -1,10 +1,10 @@
 #pragma once
 
-#include "loaders/IGeoDatabaseLoader.h"
-#include "locator/VectorGeoRecordProvider.h"
-#include "locator/GeoLocator.h"
-#include "interfaces/ICommandHandler.h"
-#include "command/ParsedCommand.h"
+#include "IGeoDatabaseLoader.h"
+#include "VectorGeoRecordProvider.h"
+#include "GeoLocator.h"
+#include "ICommandHandler.h"
+#include "ParsedCommand.h"
 
 #include <memory>
 #include <string>

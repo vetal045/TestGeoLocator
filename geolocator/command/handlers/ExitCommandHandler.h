@@ -1,7 +1,7 @@
 #pragma once
 
-#include "interfaces/ICommandHandler.h"
-#include "command/ParsedCommand.h"
+#include "ICommandHandler.h"
+#include "ParsedCommand.h"
 
 namespace geolocation::command::handlers {
 

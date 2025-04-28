@@ -1,9 +1,9 @@
-#include "service/CommandService.h"
-#include "factory/ConcreteCommandFactory.h"
-#include "command/CommandParser.h"
-#include "command/ParsedCommand.h"
-#include "locator/VectorGeoRecordProvider.h"
-#include "locator/GeoLocator.h"
+#include "CommandService.h"
+#include "ConcreteCommandFactory.h"
+#include "CommandParser.h"
+#include "ParsedCommand.h"
+#include "VectorGeoRecordProvider.h"
+#include "GeoLocator.h"
 
 
 #include <iostream>
