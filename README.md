@@ -6,7 +6,7 @@ This project is a high-performance IP geolocation lookup tool written in modern 
 
 It supports:
 - Fast loading of large IP geolocation datasets
-- Ultra-fast IP lookups
+- Fast IP lookups
 - Strict and simple CLI request-response protocol (`LOAD`, `LOOKUP <IP>`, `EXIT`)
 
 The application is built to run reliably on both **Windows** (using MinGW-w64 GCC) and **macOS** (using Apple Clang).
@@ -138,7 +138,6 @@ python geolocation_test.py --executable ./build/geolocator/geolocator --database
 ```
 Database loaded Memory usage: 415.46mb Load time: 223ms
 OK    1.0.0.0 US Los Angeles Memory usage: 415.46mb Lookup time: 46μs
-OK    71.6.28.0 US San Jose Memory usage: 415.46mb Lookup time: 54μs
 ...
 Final points for 10 measurements: 4404.14
 ```
@@ -151,51 +150,61 @@ On both Windows and macOS, the script might end with a `psutil.NoSuchProcess` er
 
 ---
 
-## Optimization Techniques (Detailed)
+## Benchmark Results and Platform Differences
 
-### 1. Sorted Records + Binary Search
-Geolocation IP ranges are loaded sorted by start IP address. At runtime, lookups are performed using `std::lower_bound`, providing logarithmic O(log N) time complexity. This guarantees fast lookups even with millions of IP ranges.
+### Windows (Dell G15 5530, i5-13450HX, 32 GB RAM)
+```
+Database loaded Memory usage: 415.52mb Load time: 240ms
+Final points for 10 measurements: 4443.11
+```
 
-### 2. Chunked Data Partitioning
-Records are partitioned into "chunks" based on IP address ranges. Lookup first selects a chunk based on IP, drastically reducing the number of records to scan during binary search. This further optimizes average-case lookup time.
+### macOS (MacBook Pro 14" M1 Pro, 16 GB RAM)
+```
+Database loaded Memory usage: 543.38mb Load time: 788ms
+Final points for 10 measurements: 6265.17
+```
 
-### 3. Efficient IP Parsing
-A fast manual IP string to integer parser is used instead of costly `std::istringstream` or regex-based parsing, improving lookup performance significantly.
-
-### 4. Preprocessing CSV into Binary `.geo` Format
-Instead of parsing CSV on every `LOAD`, the `.geo` format stores pre-serialized data. This reduces I/O operations, parsing overhead, and accelerates database loading by an order of magnitude.
-
-### 5. Minimal Dynamic Memory Usage
-After initial database load, the application uses preallocated vectors without further dynamic memory allocations, leading to predictable and minimal memory footprint during lookups.
+### Observations and Differences
+- **Database loading**: Faster on Windows due to `CreateFileMapping` and `MapViewOfFile`, optimized for NTFS.
+- **Memory usage**: Lower on Windows. macOS incurs additional overhead for memory mapping (`mmap`).
+- **Lookup speed**: Very close; macOS sometimes gives slightly faster microsecond lookup times due to M1 architecture optimizations.
+- **Load method**: Platform-specific mapping used in `BinaryGeoDatabaseLoader`, with Windows using WinAPI and macOS using POSIX `mmap`.
 
 ---
 
-## Challenges and Solutions (Expanded)
+## Optimization Techniques (Detailed)
 
-### 1. Slow CSV Parsing at Runtime
-**Challenge:** Parsing and loading large CSV datasets during application startup caused unacceptable delays.
+### 1. Platform-Specific Database Loading
+- Windows: `CreateFileMapping` + `MapViewOfFile`
+- macOS: `mmap`
+- Both platforms benefit from zero-copy loading.
 
-**Solution:** Designed a custom binary `.geo` format and implemented a separate preprocessing tool. At runtime, the application simply reads the `.geo` file directly into memory, skipping costly parsing.
+### 2. Sorted Records + Binary Search
+Efficient `std::lower_bound` on sorted IP ranges ensures O(log N) lookup time.
 
-### 2. High Memory Consumption
-**Challenge:** Loading all CSV records as strings and full objects caused significant memory usage, especially for large datasets.
+### 3. Chunked Data Partitioning
+Chunking IP space reduces search scope drastically, improving average-case lookup time.
 
-**Solution:** Introduced minimal, compact in-memory structures (`GeoRecord`) and aggressively used move semantics to reduce copy overhead. Optimized memory layout to align access patterns.
+### 4. Efficient IP Parsing
+Custom fast manual IP parsing instead of slow regex or stringstreams.
 
-### 3. Windows Filesystem Behavior Causing Test Failures
-**Challenge:** On Windows, files cannot be deleted if they are still opened by a stream, causing test failures when cleaning up temporary files.
+### 5. Preprocessing CSV to `.geo`
+Preprocessing reduces load time from seconds to milliseconds by avoiding CSV parsing at runtime.
 
-**Solution:** Explicitly closed file streams (`ifs.close()`) before calling `fs::remove(...)` in tests, ensuring Windows compatibility without affecting Unix systems.
+### 6. Memory-Efficient In-Memory Structures
+Careful structure layout and move semantics reduce memory footprint.
 
-### 4. Environment Inconsistencies
-**Challenge:** Different machines might lack tools (e.g., Ninja, GCC) or have misconfigured PATHs.
+---
 
-**Solution:** `build.py` script automatically checks for required tools before proceeding. Clear error messages guide the user on how to fix missing dependencies.
+## Challenges and Solutions
 
-### 5. Dealing with External Python Script Issues
-**Challenge:** Python's `psutil` package occasionally throws `NoSuchProcess` during shutdown phase on Windows.
-
-**Solution:** Since it does not affect application correctness, the application exits cleanly according to protocol. Minor psutil issues are documented and safely ignored.
+| Challenge | Solution |
+|:----------|:---------|
+| Slow CSV parsing at startup | Custom `.geo` binary format |
+| High memory usage | Compact `GeoRecord` structures and efficient loading |
+| Different filesystem behaviors | Platform-specific loading (WinAPI vs POSIX mmap) |
+| psutil errors in testing | Ignored; no impact on app correctness |
+| Missing build tools | Added auto-checks and clear errors in `build.py` |
 
 ---
 
@@ -206,22 +215,19 @@ After initial database load, the application uses preallocated vectors without f
 | Ninja not found | Install Ninja (`pip install ninja`) |
 | GCC not found (Windows) | Install MinGW-w64 (`choco install mingw`) |
 | PATH not updated | Run `refreshenv` or restart the terminal |
-| psutil errors during Python test | Harmless; related to external testing script, not application |
-| Doxygen missing | Install manually (`brew install doxygen` or `choco install doxygen`) |
+| psutil errors during Python test | Harmless; does not affect correctness |
+| Doxygen missing | Install (`brew install doxygen` / `choco install doxygen`) |
 
 ---
 
 ## License
 
-This project is licensed under the MIT License.  
+This project is licensed under the MIT License.
 It incorporates [fast-cpp-csv-parser](https://github.com/ben-strasser/fast-cpp-csv-parser) under the BSD License.
 
 ---
 
 ## Author
 
-Developed by **Vitalii Ryzhov**  
-Focus: high-performance C++20 code, clean production-ready architecture, cross-platform reliability.
-
----
-
+Developed by **Vitalii Ryzhov**
+Focus: high-performance C++20 code, clean production-grade architecture, cross-platform reliability.
