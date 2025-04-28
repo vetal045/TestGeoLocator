@@ -144,7 +144,7 @@ Final points for 10 measurements: 4404.14
 
 ### Known Issue (`psutil.NoSuchProcess`):
 
-On both Windows and macOS, the script might end with a `psutil.NoSuchProcess` error. This occurs because the script attempts to measure the application's memory usage after sending an `EXIT` command, by which point the application has already terminated.
+The script might end with a `psutil.NoSuchProcess` error. This occurs because the script attempts to measure the application's memory usage after sending an `EXIT` command, by which point the application has already terminated.
 
 **Important**: This error is harmless and does not indicate any issue with the geolocation application itself. You can safely ignore it if preceding performance metrics are displayed correctly.
 
