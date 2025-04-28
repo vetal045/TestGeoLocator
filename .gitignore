@@ -25,5 +25,12 @@ __pycache__/
 # MacOS system files
 .DS_Store
 
-# Ignore generated documentation
+# Generated documentation
 docs/html/
+
+# External datasets and CSV files
+external/
+external/**
+
+# VSCode settings
+.vscode/
