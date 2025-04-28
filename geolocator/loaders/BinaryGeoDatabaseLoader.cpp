@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <string>
-#include <iostream>
 #include <stdexcept>
 
 #if defined(_WIN32)
@@ -88,25 +87,21 @@ std::vector<GeoRecord> BinaryGeoDatabaseLoader::loadWindows(const std::string& p
     ));
 
     if (hFile == INVALID_HANDLE_VALUE) {
-        std::cerr << "Failed to open file: " << path << '\n';
         return records;
     }
 
     WinHandle hMapping(CreateFileMappingA(hFile, nullptr, PAGE_READONLY, 0, 0, nullptr));
     if (hMapping == nullptr) {
-        std::cerr << "Failed to create file mapping.\n";
         return records;
     }
 
     const char* mapped = static_cast<const char*>(MapViewOfFile(hMapping, FILE_MAP_READ, 0, 0, 0));
     if (!mapped) {
-        std::cerr << "Failed to map view of file.\n";
         return records;
     }
 
     LARGE_INTEGER size;
     if (!GetFileSizeEx(hFile, &size)) {
-        std::cerr << "Failed to get file size.\n";
         UnmapViewOfFile(mapped);
         return records;
     }
@@ -114,9 +109,7 @@ std::vector<GeoRecord> BinaryGeoDatabaseLoader::loadWindows(const std::string& p
     const char* ptr = mapped;
     const char* end = ptr + size.QuadPart;
 
-    if (!parseRecords(ptr, end, records)) {
-        std::cerr << "Failed to parse records.\n";
-    }
+    parseRecords(ptr, end, records);
 
     UnmapViewOfFile(mapped);
     return records;
@@ -127,29 +120,24 @@ std::vector<GeoRecord> BinaryGeoDatabaseLoader::loadUnix(const std::string& path
 
     FdHandle fd(open(path.c_str(), O_RDONLY));
     if (fd == -1) {
-        std::cerr << "Failed to open file: " << path << '\n';
         return records;
     }
 
     struct stat sb;
     if (fstat(fd, &sb) == -1) {
-        std::cerr << "Failed to stat file: " << path << '\n';
         return records;
     }
 
     size_t fileSize = sb.st_size;
     const char* mapped = static_cast<const char*>(mmap(nullptr, fileSize, PROT_READ, MAP_PRIVATE, fd, 0));
     if (mapped == MAP_FAILED) {
-        std::cerr << "Failed to mmap file: " << path << '\n';
         return records;
     }
 
     const char* ptr = mapped;
     const char* end = ptr + fileSize;
 
-    if (!parseRecords(ptr, end, records)) {
-        std::cerr << "Failed to parse records.\n";
-    }
+    parseRecords(ptr, end, records);
 
     munmap(const_cast<char*>(mapped), fileSize);
     return records;
@@ -159,7 +147,6 @@ std::vector<GeoRecord> BinaryGeoDatabaseLoader::loadUnix(const std::string& path
 bool BinaryGeoDatabaseLoader::parseRecords(const char*& ptr, const char* end, std::vector<GeoRecord>& records) const {
     uint32_t numRecords = 0;
     if (!readUint32(ptr, end, numRecords)) {
-        std::cerr << "Invalid or corrupted .geo header.\n";
         return false;
     }
 

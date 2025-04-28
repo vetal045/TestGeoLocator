@@ -14,7 +14,6 @@ using namespace geolocation;
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << " <path_to_database>" << std::endl;
         return EXIT_FAILURE;
     }
 
