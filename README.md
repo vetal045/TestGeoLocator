@@ -172,9 +172,11 @@ Final points for 10 measurements: 4443.11
 
 ### macOS (MacBook Pro 14" M1 Pro, 16 GB RAM)
 ```
-Database loaded Memory usage: 543.38mb Load time: 788ms
-Final points for 10 measurements: 6265.17
+Database loaded Memory usage: 316.39mb Load time: 226ms
+Final points for 10 measurements: 3432.87025
 ```
+
+Thanks to the new memory-mapped loader with header support, load time and memory usage improved significantly on macOS.
 
 ### Observations and Differences
 - **Database loading**: Faster on Windows due to `CreateFileMapping` and `MapViewOfFile`, optimized for NTFS.
@@ -205,6 +207,9 @@ Preprocessing reduces load time from seconds to milliseconds by avoiding CSV par
 
 ### 6. Memory-Efficient In-Memory Structures
 Careful structure layout and move semantics reduce memory footprint.
+
+### 7. Header-based preallocation
+Adding a numRecords header allows reserving vector capacity before reading records, reducing reallocations and boosting load performance.
 
 ---
 
