@@ -21,8 +21,8 @@ Special attention was paid to clean code structure, separation of concerns, and 
 - [CMake](https://cmake.org/download/) >= 3.16
 - [Python 3.8+](https://www.python.org/)
 - [Ninja](https://ninja-build.org/) (`pip install ninja`)
-- [MinGW-w64 GCC](https://www.mingw-w64.org/) >= 13 (`choco install mingw`)
-- Doxygen (optional, `choco install doxygen`)
+- [MinGW-w64 GCC](https://www.mingw-w64.org/) >= 13 (`choco install mingw -y`)
+- Doxygen (optional, `choco install doxygen.install -y`)
 
 ### macOS
 - Xcode Command Line Tools (`xcode-select --install`)
