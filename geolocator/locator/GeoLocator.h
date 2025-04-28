@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IGeoRecordProvider.h"
+#include "ILocator.h"
 #include "GeoRecord.h"
 
 #include <vector>
@@ -13,7 +14,7 @@ namespace geolocation::locator {
 /// 
 /// Uses an efficient data structure for quick mapping of IPv4 addresses
 /// to their corresponding country code and city name.
-class GeoLocator {
+class GeoLocator : public ILocator  {
 public:
     /// @brief Constructs a GeoLocator using a provided record provider.
     /// @param provider Record provider supplying geolocation records.
