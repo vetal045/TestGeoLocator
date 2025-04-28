@@ -54,6 +54,7 @@ TEST(PreprocessorTest, ConvertsSmallCsvToGeoFormatCorrectly) {
     EXPECT_EQ(countryCode, "US");
     EXPECT_EQ(city, "Los Angeles");
 
+    ifs.close();
     fs::remove(inputFile);
     fs::remove(outputFile);
 }
@@ -75,7 +76,7 @@ TEST(PreprocessorTest, RealDatabaseSampleShouldBeProcessedCorrectly) {
     ASSERT_TRUE(fs::exists(output));
     ASSERT_GT(fs::file_size(output), 0);
 
-    DebugReadGeoFile(output);
+    //DebugReadGeoFile(output.string());
     fs::remove(output);
 }
 
@@ -125,6 +126,7 @@ TEST(PreprocessorTest, ParsesAndSortsCorrectly) {
 
     ASSERT_TRUE(std::is_sorted(loadedStartIps.begin(), loadedStartIps.end()));
 
+    ifs.close();
     fs::remove(inputFile);
     fs::remove(outputFile);
 }

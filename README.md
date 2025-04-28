@@ -1,194 +1,227 @@
-# Project Overview
+# Geolocation Lookup Application
 
-This project is a high-performance IP geolocation lookup application. It is developed in modern C++17/20 and focuses on loading large datasets quickly, performing efficient IP lookups, and minimizing memory usage. The design prioritizes simplicity, speed, and clean architecture, targeting macOS ARM64 (Apple Silicon).
+## Project Overview
 
-The application implements a specific request-response CLI protocol with commands: LOAD, LOOKUP <IP>, and EXIT.
+This project is a high-performance IP geolocation lookup tool written in modern **C++20**, designed for maximum efficiency, minimal memory footprint, and clean architectural organization.
 
----
+It supports:
+- Fast loading of large IP geolocation datasets
+- Ultra-fast IP lookups
+- Strict and simple CLI request-response protocol (`LOAD`, `LOOKUP <IP>`, `EXIT`)
 
-# Requirements
+The application is built to run reliably on both **Windows** (using MinGW-w64 GCC) and **macOS** (using Apple Clang).
 
-- macOS (Apple Silicon M1/M2)
-- CMake >= 3.16
-- Make
-- GCC >= 10 or Apple Clang with C++17/20 support
-- Python 3.8+ (for optional testing script)
-- Coreutils (`realpath`) - install via `brew install coreutils`
-- Doxygen (optional, for documentation generation)
+Special attention was paid to clean code structure, separation of concerns, and production-grade C++ development practices.
 
 ---
 
-# Project Structure
+## Requirements and Pre-conditions
 
-| Path | Purpose |
-|:-----|:--------|
-| `src/locator/` | Core IP lookup logic (`GeoLocator`, `VectorGeoRecordProvider`) |
-| `src/loaders/` | Loading binary `.geo` files efficiently (`BinaryGeoDatabaseLoader`) |
-| `src/command/` | Protocol command handling (LOAD, LOOKUP, EXIT) |
-| `src/service/` | `CommandService` to dispatch commands |
-| `preprocessor/` | Preprocessing CSV into efficient `.geo` format |
-| `include/` | Common structures and interface definitions |
-| `data/` | Geolocation datasets: `database.csv` and `database.geo` |
-| `tests/` | Unit tests based on GoogleTest |
-| `docs/` | Documentation (optional, via Doxygen) |
+### Windows
+- [CMake](https://cmake.org/download/) >= 3.16
+- [Python 3.8+](https://www.python.org/)
+- [Ninja](https://ninja-build.org/) (`pip install ninja`)
+- [MinGW-w64 GCC](https://www.mingw-w64.org/) >= 13 (`choco install mingw`)
+- Doxygen (optional, `choco install doxygen`)
+
+### macOS
+- Xcode Command Line Tools (`xcode-select --install`)
+- Homebrew packages:
+  ```bash
+  brew install cmake ninja coreutils doxygen
+  ```
+
+**System Preconditions:**
+- Ensure `gcc` or `clang` compiler supports C++20.
+- Ensure `ninja` is installed and available in `PATH`.
+- On Windows, use `refreshenv` after installation via Chocolatey.
+- Python 3.8+ must be available for running helper scripts.
 
 ---
 
-# Building and Setup
+## Project Structure and Component Overview
 
-To build everything:
+| Path | Responsibility |
+|:-----|:---------------|
+| `src/locator/` | Core geolocation logic: efficient IP lookup using sorted chunks (`GeoLocator`) |
+| `src/loaders/` | Loaders for binary `.geo` database files with minimal memory overhead |
+| `src/command/` | Parsing CLI commands and handling command execution (`CommandParser`, handlers) |
+| `src/service/` | Central dispatching of parsed commands to handlers (`CommandService`) |
+| `preprocessor/` | CSV-to-GEO preprocessing tool to accelerate loading |
+| `include/` | Common interfaces (`IGeoRecordProvider`, `IGeoDatabaseLoader`) and data types |
+| `tests/` | Unit and integration tests, using GoogleTest framework |
+| `docs/` | Optional Doxygen-generated documentation |
+| `data/` | Geolocation datasets: `database.csv`, generated `database.geo` |
 
+Each module is isolated with clear single-responsibility principles and minimal coupling.
+
+---
+
+## Building the Project
+
+Use the unified `build.py` script for all operations.
+
+Typical full clean rebuild:
 ```bash
-./make.sh --full-rebuild
+python build.py --full-rebuild --build-only
 ```
 
-To build only (without running tests):
+Other useful commands:
 
-```bash
-./make.sh --build-only
-```
+| Purpose | Command |
+|:--------|:--------|
+| Build without cleaning | `python build.py --build-only` |
+| Build and run unit tests | `python build.py --test` |
+| Build only preprocessor tool | `python build.py --preprocessor` |
+| Generate Doxygen documentation | `python build.py --docs` |
 
-To run unit tests:
-
-```bash
-./make.sh --test
-```
-
-All build scripts are prepared for macOS environment.
-
----
-
-# Preprocessing the Database
-
-Loading the raw `.csv` file is slow. To optimize, use the preprocessor to create a compact `.geo` file:
-
-```bash
-./preprocess.sh ./data/database.csv ./data/database.geo
-```
-
-**Why `.geo`?**
-- Binary format minimizes load time
-- Enables memory-mapped reading
-- Reduces parsing overhead
-
-Use `.geo` file whenever possible for best performance.
+**Note:**
+- `build.py` automatically detects OS and chooses `windows-release` or `macos-release` CMake preset.
+- Ninja is used for high-speed builds.
 
 ---
 
-# How to Use the Application
+## Database Preprocessing
 
-## Manual Usage (Standard Input/Output)
+Since loading raw `.csv` at runtime is slow, the project provides a preprocessing tool that converts `.csv` into optimized `.geo` binary format.
 
-The application implements a line-based CLI protocol:
+Usage:
+```bash
+./build/preprocessor/preprocessor.exe ./data/database.csv ./data/database.geo
+```
+(on macOS, no `.exe` extension)
 
-```text
+**Advantages of `.geo` format:**
+- Minimizes load time drastically
+- Reduces runtime parsing costs
+- Enables efficient memory access patterns
+
+It is strongly recommended to always use `.geo` files during application usage.
+
+---
+
+## Application Usage Protocol
+
+The application communicates via standard input/output.
+
+**Supported Commands:**
+| Command | Response |
+|:--------|:---------|
+| `LOAD` | `OK\n` (or `ERR\n` on failure) |
+| `LOOKUP <IPv4>` | `<CountryCode>,<City>\n` (or `ERR\n` if not found or invalid input) |
+| `EXIT` | `OK\n` before graceful shutdown |
+
+**Example Session:**
+```
 > LOAD
 < OK
-> LOOKUP 71.6.28.0
-< US,San Jose
+> LOOKUP 1.0.0.0
+< US,Los Angeles
 > EXIT
 < OK
 ```
 
-Use command line with redirection or scripting tools to communicate via stdin/stdout.
-
 ---
 
-## Using the Provided Python Test Script
+## Python Test Script Usage
 
-There is a provided `geolocation_test.py` script to validate basic protocol compatibility and measure performance.
+The provided `geolocation_test.py` script validates protocol compatibility and measures performance metrics (database load time, memory usage, IP lookup latency).
 
-Example:
+### Example Command:
 
 ```bash
-python3 geolocation_test.py --executable ./build/geolocator/geolocator --database ./data/database.geo
+python geolocation_test.py --executable ./build/geolocator/geolocator --database ./data/database.geo
 ```
 
-**Important:**
-- The Python script is third-party and cannot be modified.
-- On macOS, the script may crash with `psutil.NoSuchProcess` due to differences in process management. This issue is unrelated to the application and comes from the testing script.
+### Sample Output:
+
+```
+Database loaded Memory usage: 415.46mb Load time: 223ms
+OK    1.0.0.0 US Los Angeles Memory usage: 415.46mb Lookup time: 46μs
+OK    71.6.28.0 US San Jose Memory usage: 415.46mb Lookup time: 54μs
+...
+Final points for 10 measurements: 4404.14
+```
+
+### Known Issue (`psutil.NoSuchProcess`):
+
+On both Windows and macOS, the script might end with a `psutil.NoSuchProcess` error. This occurs because the script attempts to measure the application's memory usage after sending an `EXIT` command, by which point the application has already terminated.
+
+**Important**: This error is harmless and does not indicate any issue with the geolocation application itself. You can safely ignore it if preceding performance metrics are displayed correctly.
 
 ---
 
-# Optimization Techniques
+## Optimization Techniques (Detailed)
 
-## Sorted Records with Binary Search
-The IP ranges are stored sorted by start IP. Lookup uses `std::lower_bound`, achieving O(log N) search time.
+### 1. Sorted Records + Binary Search
+Geolocation IP ranges are loaded sorted by start IP address. At runtime, lookups are performed using `std::lower_bound`, providing logarithmic O(log N) time complexity. This guarantees fast lookups even with millions of IP ranges.
 
-## Memory Mapping
-The binary `.geo` file is memory-mapped on load (mmap). This eliminates full file reads and reduces memory footprint.
+### 2. Chunked Data Partitioning
+Records are partitioned into "chunks" based on IP address ranges. Lookup first selects a chunk based on IP, drastically reducing the number of records to scan during binary search. This further optimizes average-case lookup time.
 
-## Fast IP String Parsing
-Instead of using `std::istringstream`, a manual parser is used to quickly convert IP address strings to integers.
+### 3. Efficient IP Parsing
+A fast manual IP string to integer parser is used instead of costly `std::istringstream` or regex-based parsing, improving lookup performance significantly.
 
-## Minimal Dynamic Allocation
-Once loaded, the application uses preallocated structures. No frequent heap allocations during lookup.
+### 4. Preprocessing CSV into Binary `.geo` Format
+Instead of parsing CSV on every `LOAD`, the `.geo` format stores pre-serialized data. This reduces I/O operations, parsing overhead, and accelerates database loading by an order of magnitude.
 
----
-
-# Challenges and Solutions
-
-## Slow CSV Parsing
-**Problem:** Loading the `.csv` file line by line caused significant startup delays.
-
-**Solution:** A custom binary `.geo` format and a preprocessing tool were created. This reduced load time by approximately 4x.
-
-## Memory Usage with Large Datasets
-**Problem:** Reading all data into memory was expensive.
-
-**Solution:** The `.geo` format allows memory mapping without full loading, saving memory and speeding up access.
-
-## Process Management Issues with psutil
-**Problem:** During Python testing, especially on macOS, `psutil` raised `NoSuchProcess` errors.
-
-**Solution:** The application was designed to exit cleanly according to the protocol. Python script issues are outside project scope.
-
-## Lookup Time
-**Problem:** Naive search algorithms were too slow on large datasets.
-
-**Solution:** Using sorted IP records and binary search (`std::lower_bound`) drastically reduced lookup times.
+### 5. Minimal Dynamic Memory Usage
+After initial database load, the application uses preallocated vectors without further dynamic memory allocations, leading to predictable and minimal memory footprint during lookups.
 
 ---
 
-# Potential Improvements
+## Challenges and Solutions (Expanded)
 
-- Implementing Radix Tree or Compressed Trie for even faster lookups.
-- Parallel database loading to speed up initialization.
-- SIMD optimizations for IP parsing.
-- Supporting dynamic reload of databases without downtime.
-- Extending support for IPv6 address space.
+### 1. Slow CSV Parsing at Runtime
+**Challenge:** Parsing and loading large CSV datasets during application startup caused unacceptable delays.
 
-These were considered but were out of scope due to time constraints.
+**Solution:** Designed a custom binary `.geo` format and implemented a separate preprocessing tool. At runtime, the application simply reads the `.geo` file directly into memory, skipping costly parsing.
+
+### 2. High Memory Consumption
+**Challenge:** Loading all CSV records as strings and full objects caused significant memory usage, especially for large datasets.
+
+**Solution:** Introduced minimal, compact in-memory structures (`GeoRecord`) and aggressively used move semantics to reduce copy overhead. Optimized memory layout to align access patterns.
+
+### 3. Windows Filesystem Behavior Causing Test Failures
+**Challenge:** On Windows, files cannot be deleted if they are still opened by a stream, causing test failures when cleaning up temporary files.
+
+**Solution:** Explicitly closed file streams (`ifs.close()`) before calling `fs::remove(...)` in tests, ensuring Windows compatibility without affecting Unix systems.
+
+### 4. Environment Inconsistencies
+**Challenge:** Different machines might lack tools (e.g., Ninja, GCC) or have misconfigured PATHs.
+
+**Solution:** `build.py` script automatically checks for required tools before proceeding. Clear error messages guide the user on how to fix missing dependencies.
+
+### 5. Dealing with External Python Script Issues
+**Challenge:** Python's `psutil` package occasionally throws `NoSuchProcess` during shutdown phase on Windows.
+
+**Solution:** Since it does not affect application correctness, the application exits cleanly according to protocol. Minor psutil issues are documented and safely ignored.
 
 ---
 
-# External Libraries
-
-- [fast-cpp-csv-parser](https://github.com/ben-strasser/fast-cpp-csv-parser) (BSD License)
-  - Used in the preprocessor for efficient CSV parsing.
-
----
-
-# FAQ / Known Issues
+## Known Issues and Notes
 
 | Problem | Solution |
 |:--------|:---------|
-| `realpath` not found on macOS | Install coreutils: `brew install coreutils` |
-| Python `psutil.NoSuchProcess` | Known issue in testing script, not related to the application |
-| Slow load when using `.csv` | Use the provided preprocessor to create `.geo` files |
+| Ninja not found | Install Ninja (`pip install ninja`) |
+| GCC not found (Windows) | Install MinGW-w64 (`choco install mingw`) |
+| PATH not updated | Run `refreshenv` or restart the terminal |
+| psutil errors during Python test | Harmless; related to external testing script, not application |
+| Doxygen missing | Install manually (`brew install doxygen` or `choco install doxygen`) |
 
 ---
 
-# License
+## License
 
-This project is licensed under the MIT License.
-It incorporates fast-cpp-csv-parser, licensed under the BSD License.
+This project is licensed under the MIT License.  
+It incorporates [fast-cpp-csv-parser](https://github.com/ben-strasser/fast-cpp-csv-parser) under the BSD License.
 
 ---
 
-# Author
+## Author
 
-Developed by Vitalii Ryzhov for a technical assessment challenge, with a focus on performance, clean architecture, and production-grade C++ development.
+Developed by **Vitalii Ryzhov**  
+Focus: high-performance C++20 code, clean production-ready architecture, cross-platform reliability.
 
 ---
 
