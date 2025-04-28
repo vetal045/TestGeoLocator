@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
-#include "service/CommandService.h"
-#include "command/ParsedCommand.h"
-#include "interfaces/ICommandHandler.h"
-#include "interfaces/ICommandFactory.h"
+#include "CommandService.h"
+#include "ParsedCommand.h"
+#include "ICommandHandler.h"
+#include "ICommandFactory.h"
 
 using namespace geolocation::service;
 using namespace geolocation::command;

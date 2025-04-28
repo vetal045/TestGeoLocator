@@ -30,19 +30,21 @@ int RunGeoPreprocessing(
         return EXIT_FAILURE;
     }
 
+    // Write number of record as header
+    uint32_t numRecords = static_cast<uint32_t>(records.size());
+    ofs.write(reinterpret_cast<const char*>(&numRecords), sizeof(numRecords));
+
     for (const auto& record : records) {
         // Write IP range (start and end) first
         ofs.write(reinterpret_cast<const char*>(&record.startIp), sizeof(record.startIp));
         ofs.write(reinterpret_cast<const char*>(&record.endIp), sizeof(record.endIp));
 
-        // Serialize country and city with their lengths first to allow precise deserialization
         uint16_t countryLen = static_cast<uint16_t>(record.countryCode.size());
         uint16_t cityLen = static_cast<uint16_t>(record.city.size());
 
         ofs.write(reinterpret_cast<const char*>(&countryLen), sizeof(countryLen));
         ofs.write(reinterpret_cast<const char*>(&cityLen), sizeof(cityLen));
 
-        // Write raw string bytes
         ofs.write(record.countryCode.data(), countryLen);
         ofs.write(record.city.data(), cityLen);
     }

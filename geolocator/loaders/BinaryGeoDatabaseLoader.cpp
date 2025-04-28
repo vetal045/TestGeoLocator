@@ -18,11 +18,66 @@ namespace geolocation::loaders {
 
 using common::GeoRecord;
 
-std::vector<GeoRecord> BinaryGeoDatabaseLoader::load(const std::string& path) const {
-    std::vector<GeoRecord> records;
+namespace {
+
+// Platform-specific RAII for file handles
+#if defined(_WIN32)
+struct WinHandle {
+    HANDLE handle = INVALID_HANDLE_VALUE;
+    WinHandle() = default;
+    explicit WinHandle(HANDLE h) : handle(h) {}
+    ~WinHandle() {
+        if (handle != INVALID_HANDLE_VALUE && handle != nullptr) {
+            CloseHandle(handle);
+        }
+    }
+    operator HANDLE() const { return handle; }
+};
+#else
+struct FdHandle {
+    int fd = -1;
+    FdHandle() = default;
+    explicit FdHandle(int f) : fd(f) {}
+    ~FdHandle() {
+        if (fd != -1) {
+            close(fd);
+        }
+    }
+    operator int() const { return fd; }
+};
+#endif
+
+bool readUint32(const char*& ptr, const char* end, uint32_t& out) {
+    if (end - ptr < static_cast<ptrdiff_t>(sizeof(uint32_t)))
+        return false;
+    out = *reinterpret_cast<const uint32_t*>(ptr);
+    ptr += sizeof(uint32_t);
+    return true;
+}
+
+bool readUint16(const char*& ptr, const char* end, uint16_t& out) {
+    if (end - ptr < static_cast<ptrdiff_t>(sizeof(uint16_t)))
+        return false;
+    out = *reinterpret_cast<const uint16_t*>(ptr);
+    ptr += sizeof(uint16_t);
+    return true;
+}
+
+bool readString(const char*& ptr, const char* end, size_t len, std::string& out) {
+    if (end - ptr < static_cast<ptrdiff_t>(len))
+        return false;
+    out.assign(ptr, len);
+    ptr += len;
+    return true;
+}
+
+} // unnamed namespace
 
 #if defined(_WIN32)
-    HANDLE hFile = CreateFileA(
+std::vector<GeoRecord> BinaryGeoDatabaseLoader::loadWindows(const std::string& path) const {
+    std::vector<GeoRecord> records;
+
+    WinHandle hFile(CreateFileA(
         path.c_str(),
         GENERIC_READ,
         FILE_SHARE_READ,
@@ -30,50 +85,47 @@ std::vector<GeoRecord> BinaryGeoDatabaseLoader::load(const std::string& path) co
         OPEN_EXISTING,
         FILE_ATTRIBUTE_NORMAL,
         nullptr
-    );
+    ));
 
     if (hFile == INVALID_HANDLE_VALUE) {
-        std::cerr << "Failed to open file: " << path << std::endl;
+        std::cerr << "Failed to open file: " << path << '\n';
         return records;
     }
 
-    HANDLE hMapping = CreateFileMappingA(
-        hFile,
-        nullptr,
-        PAGE_READONLY,
-        0,
-        0,
-        nullptr
-    );
-
+    WinHandle hMapping(CreateFileMappingA(hFile, nullptr, PAGE_READONLY, 0, 0, nullptr));
     if (hMapping == nullptr) {
-        std::cerr << "Failed to create file mapping." << std::endl;
-        CloseHandle(hFile);
+        std::cerr << "Failed to create file mapping.\n";
         return records;
     }
 
-    void* mapped = MapViewOfFile(
-        hMapping,
-        FILE_MAP_READ,
-        0,
-        0,
-        0
-    );
-
-    if (mapped == nullptr) {
-        std::cerr << "Failed to map view of file." << std::endl;
-        CloseHandle(hMapping);
-        CloseHandle(hFile);
+    const char* mapped = static_cast<const char*>(MapViewOfFile(hMapping, FILE_MAP_READ, 0, 0, 0));
+    if (!mapped) {
+        std::cerr << "Failed to map view of file.\n";
         return records;
     }
 
     LARGE_INTEGER size;
-    GetFileSizeEx(hFile, &size);
-    const char* ptr = static_cast<const char*>(mapped);
+    if (!GetFileSizeEx(hFile, &size)) {
+        std::cerr << "Failed to get file size.\n";
+        UnmapViewOfFile(mapped);
+        return records;
+    }
+
+    const char* ptr = mapped;
     const char* end = ptr + size.QuadPart;
 
+    if (!parseRecords(ptr, end, records)) {
+        std::cerr << "Failed to parse records.\n";
+    }
+
+    UnmapViewOfFile(mapped);
+    return records;
+}
 #else
-    int fd = open(path.c_str(), O_RDONLY);
+std::vector<GeoRecord> BinaryGeoDatabaseLoader::loadUnix(const std::string& path) const {
+    std::vector<GeoRecord> records;
+
+    FdHandle fd(open(path.c_str(), O_RDONLY));
     if (fd == -1) {
         std::cerr << "Failed to open file: " << path << '\n';
         return records;
@@ -81,65 +133,64 @@ std::vector<GeoRecord> BinaryGeoDatabaseLoader::load(const std::string& path) co
 
     struct stat sb;
     if (fstat(fd, &sb) == -1) {
-        std::cerr << "Failed to get file size: " << path << '\n';
-        close(fd);
+        std::cerr << "Failed to stat file: " << path << '\n';
         return records;
     }
 
     size_t fileSize = sb.st_size;
-    void* mapped = mmap(nullptr, fileSize, PROT_READ, MAP_PRIVATE, fd, 0);
+    const char* mapped = static_cast<const char*>(mmap(nullptr, fileSize, PROT_READ, MAP_PRIVATE, fd, 0));
     if (mapped == MAP_FAILED) {
         std::cerr << "Failed to mmap file: " << path << '\n';
-        close(fd);
         return records;
     }
 
-    const char* ptr = static_cast<const char*>(mapped);
+    const char* ptr = mapped;
     const char* end = ptr + fileSize;
+
+    if (!parseRecords(ptr, end, records)) {
+        std::cerr << "Failed to parse records.\n";
+    }
+
+    munmap(const_cast<char*>(mapped), fileSize);
+    return records;
+}
 #endif
 
-    while (ptr < end) {
-        if (end - ptr < static_cast<ptrdiff_t>(sizeof(uint32_t) * 2 + sizeof(uint16_t) * 2)) {
-            std::cerr << "Corrupted .geo file: not enough data\n";
-            break;
+bool BinaryGeoDatabaseLoader::parseRecords(const char*& ptr, const char* end, std::vector<GeoRecord>& records) const {
+    uint32_t numRecords = 0;
+    if (!readUint32(ptr, end, numRecords)) {
+        std::cerr << "Invalid or corrupted .geo header.\n";
+        return false;
+    }
+
+    records.reserve(numRecords);
+
+    for (uint32_t i = 0; i < numRecords; ++i) {
+        uint32_t startIp, endIp;
+        uint16_t countryLen, cityLen;
+        std::string countryCode, city;
+
+        if (!readUint32(ptr, end, startIp) ||
+            !readUint32(ptr, end, endIp) ||
+            !readUint16(ptr, end, countryLen) ||
+            !readUint16(ptr, end, cityLen) ||
+            !readString(ptr, end, countryLen, countryCode) ||
+            !readString(ptr, end, cityLen, city)) {
+            return false;
         }
-
-        uint32_t startIp = *reinterpret_cast<const uint32_t*>(ptr);
-        ptr += sizeof(uint32_t);
-
-        uint32_t endIp = *reinterpret_cast<const uint32_t*>(ptr);
-        ptr += sizeof(uint32_t);
-
-        uint16_t countryLen = *reinterpret_cast<const uint16_t*>(ptr);
-        ptr += sizeof(uint16_t);
-
-        uint16_t cityLen = *reinterpret_cast<const uint16_t*>(ptr);
-        ptr += sizeof(uint16_t);
-
-        if (ptr + countryLen + cityLen > end) {
-            std::cerr << "Corrupted .geo file: invalid string lengths\n";
-            break;
-        }
-
-        std::string countryCode(ptr, countryLen);
-        ptr += countryLen;
-
-        std::string city(ptr, cityLen);
-        ptr += cityLen;
 
         records.emplace_back(GeoRecord{startIp, endIp, std::move(countryCode), std::move(city)});
     }
 
-#if defined(_WIN32)
-    UnmapViewOfFile(mapped);
-    CloseHandle(hMapping);
-    CloseHandle(hFile);
-#else
-    munmap(const_cast<char*>(ptr), fileSize);
-    close(fd);
-#endif
+    return true;
+}
 
-    return records;
+std::vector<GeoRecord> BinaryGeoDatabaseLoader::load(const std::string& path) const {
+#if defined(_WIN32)
+    return loadWindows(path);
+#else
+    return loadUnix(path);
+#endif
 }
 
 } // namespace geolocation::loaders

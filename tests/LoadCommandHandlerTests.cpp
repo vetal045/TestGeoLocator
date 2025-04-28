@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
-#include "command/handlers/LoadCommandHandler.h"
-#include "locator/GeoLocator.h"
-#include "locator/VectorGeoRecordProvider.h"
-#include "command/ParsedCommand.h"
+#include "LoadCommandHandler.h"
+#include "GeoLocator.h"
+#include "VectorGeoRecordProvider.h"
+#include "ParsedCommand.h"
 
 #include <fstream>
 
@@ -30,6 +30,9 @@ TEST(LoadCommandHandlerTest, HandlesRealGeoDatabaseLoadSuccessfully) {
         if (!out) {
             FAIL() << "Failed to create test database file.";
         }
+
+        uint32_t numRecords = 1;
+        out.write(reinterpret_cast<const char*>(&numRecords), sizeof(numRecords));
 
         uint32_t startIp = 16777216; // 1.0.0.0
         uint32_t endIp = 16777471;   // 1.0.0.255

@@ -43,15 +43,17 @@ Special attention was paid to clean code structure, separation of concerns, and 
 
 | Path | Responsibility |
 |:-----|:---------------|
-| `src/locator/` | Core geolocation logic: efficient IP lookup using sorted chunks (`GeoLocator`) |
-| `src/loaders/` | Loaders for binary `.geo` database files with minimal memory overhead |
-| `src/command/` | Parsing CLI commands and handling command execution (`CommandParser`, handlers) |
-| `src/service/` | Central dispatching of parsed commands to handlers (`CommandService`) |
-| `preprocessor/` | CSV-to-GEO preprocessing tool to accelerate loading |
-| `include/` | Common interfaces (`IGeoRecordProvider`, `IGeoDatabaseLoader`) and data types |
-| `tests/` | Unit and integration tests, using GoogleTest framework |
-| `docs/` | Optional Doxygen-generated documentation |
+| `geolocator/locator/` | Core geolocation logic: efficient IP lookup using sorted chunks (`GeoLocator`) |
+| `geolocator/loaders/` | Binary `.geo` database loaders (platform-specific memory mapping) |
+| `geolocator/command/` | Command parsing and dispatching (`CommandParser`, `CommandService`, handlers) |
+| `geolocator/service/` | Central dispatcher for parsed commands |
+| `geolocator/common/` | Common data structures like `GeoRecord`, `ChunkInfo` |
+| `geolocator/factory/` | Factory for dependency injection |
+| `geolocator/interfaces/` | Abstract interfaces like `IGeoDatabaseLoader`, `ICommandHandler` |
+| `geolocator/preprocessor/` | CSV-to-GEO preprocessing tool (`GeoPreprocessor`) |
+| `tests/` | Unit and integration tests using GoogleTest |
 | `data/` | Geolocation datasets: `database.csv`, generated `database.geo` |
+| `docs/` | Doxygen documentation (optional) |
 
 Each module is isolated with clear single-responsibility principles and minimal coupling.
 
@@ -83,7 +85,17 @@ Other useful commands:
 
 ## Database Preprocessing
 
-Since loading raw `.csv` at runtime is slow, the project provides a preprocessing tool that converts `.csv` into optimized `.geo` binary format.
+Since loading raw `.csv` at runtime is slow, the project provides a preprocessing tool that converts `.csv` into an optimized `.geo` binary format.
+
+**The `.geo` format structure:**
+- 4 bytes: `numRecords` (uint32_t) — number of entries
+- Repeated for each record:
+  - 4 bytes: `startIp`
+  - 4 bytes: `endIp`
+  - 2 bytes: `countryCode` length
+  - 2 bytes: `city` length
+  - N bytes: countryCode (raw string)
+  - M bytes: city (raw string)
 
 Usage:
 ```bash

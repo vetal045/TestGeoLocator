@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include "loaders/BinaryGeoDatabaseLoader.h"
-#include "common/GeoRecord.h"
+#include "BinaryGeoDatabaseLoader.h"
+#include "GeoRecord.h"
 
 #include <fstream>
 #include <filesystem>
@@ -16,14 +16,17 @@ TEST(GeoDataLoaderTest, LoadsRecordsCorrectly) {
     {
         std::ofstream ofs(geoFile, std::ios::binary);
         ASSERT_TRUE(ofs.is_open());
+        
+        uint32_t numRecords = 1;
+        ofs.write(reinterpret_cast<const char*>(&numRecords), sizeof(numRecords));
 
         uint32_t startIp = 16777216;
         uint32_t endIp = 16777471;
         std::string country = "US";
         std::string city = "Los Angeles";
 
-        uint16_t countryLen = country.size();
-        uint16_t cityLen = city.size();
+        uint16_t countryLen = static_cast<uint16_t>(country.size());
+        uint16_t cityLen = static_cast<uint16_t>(city.size());
 
         ofs.write(reinterpret_cast<const char*>(&startIp), sizeof(startIp));
         ofs.write(reinterpret_cast<const char*>(&endIp), sizeof(endIp));

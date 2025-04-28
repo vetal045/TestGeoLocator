@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include "command/handlers/ExitCommandHandler.h"
-#include "command/ParsedCommand.h"
+#include "handlers/ExitCommandHandler.h"
+#include "ParsedCommand.h"
 
 using namespace geolocation::command::handlers;
 using namespace geolocation::command;

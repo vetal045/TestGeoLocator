@@ -32,6 +32,9 @@ TEST(PreprocessorTest, ConvertsSmallCsvToGeoFormatCorrectly) {
     std::ifstream ifs(outputFile, std::ios::binary);
     ASSERT_TRUE(ifs.is_open());
 
+    uint32_t numRecords = 0;
+    ifs.read(reinterpret_cast<char*>(&numRecords), sizeof(numRecords));
+
     uint32_t startIp, endIp;
     uint16_t countryLen, cityLen;
     
@@ -76,7 +79,6 @@ TEST(PreprocessorTest, RealDatabaseSampleShouldBeProcessedCorrectly) {
     ASSERT_TRUE(fs::exists(output));
     ASSERT_GT(fs::file_size(output), 0);
 
-    //DebugReadGeoFile(output.string());
     fs::remove(output);
 }
 
@@ -104,22 +106,25 @@ TEST(PreprocessorTest, ParsesAndSortsCorrectly) {
     std::ifstream ifs(outputFile, std::ios::binary);
     ASSERT_TRUE(ifs.is_open());
 
+    uint32_t numRecords = 0;
+    ifs.read(reinterpret_cast<char*>(&numRecords), sizeof(numRecords));
+
     std::vector<uint32_t> loadedStartIps;
 
     while (ifs.peek() != EOF) {
         uint32_t startIp, endIp;
         uint16_t countryLen, cityLen;
 
-        ifs.read(reinterpret_cast<char*>(&startIp), sizeof(startIp));
-        ifs.read(reinterpret_cast<char*>(&endIp), sizeof(endIp));
-        ifs.read(reinterpret_cast<char*>(&countryLen), sizeof(countryLen));
-        ifs.read(reinterpret_cast<char*>(&cityLen), sizeof(cityLen));
+        if (!ifs.read(reinterpret_cast<char*>(&startIp), sizeof(startIp))) break;
+        if (!ifs.read(reinterpret_cast<char*>(&endIp), sizeof(endIp))) break;
+        if (!ifs.read(reinterpret_cast<char*>(&countryLen), sizeof(countryLen))) break;
+        if (!ifs.read(reinterpret_cast<char*>(&cityLen), sizeof(cityLen))) break;
 
         std::vector<char> countryBuf(countryLen);
         std::vector<char> cityBuf(cityLen);
 
-        ifs.read(countryBuf.data(), countryLen);
-        ifs.read(cityBuf.data(), cityLen);
+        if (!ifs.read(countryBuf.data(), countryLen)) break;
+        if (!ifs.read(cityBuf.data(), cityLen)) break;
 
         loadedStartIps.push_back(startIp);
     }

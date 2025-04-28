@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
-#include "factory/ConcreteCommandFactory.h"
-#include "locator/GeoLocator.h"
-#include "locator/VectorGeoRecordProvider.h"
+#include "ConcreteCommandFactory.h"
+#include "GeoLocator.h"
+#include "VectorGeoRecordProvider.h"
 
 using namespace geolocation::factory;
 using namespace geolocation::locator;

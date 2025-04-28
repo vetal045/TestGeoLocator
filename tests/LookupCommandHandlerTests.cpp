@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
-#include "command/handlers/LookupCommandHandler.h"
-#include "locator/GeoLocator.h"
-#include "locator/VectorGeoRecordProvider.h"
-#include "command/ParsedCommand.h"
+#include "LookupCommandHandler.h"
+#include "GeoLocator.h"
+#include "VectorGeoRecordProvider.h"
+#include "ParsedCommand.h"
 
 using namespace geolocation::command::handlers;
 using namespace geolocation::locator;

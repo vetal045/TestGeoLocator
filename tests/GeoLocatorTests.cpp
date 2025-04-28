@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
-#include "locator/GeoLocator.h"
-#include "locator/VectorGeoRecordProvider.h"
-#include "common/GeoRecord.h"
+#include "GeoLocator.h"
+#include "VectorGeoRecordProvider.h"
+#include "GeoRecord.h"
 
 using geolocation::locator::GeoLocator;
 using geolocation::locator::VectorGeoRecordProvider;

@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "command/CommandParser.h"
+#include "CommandParser.h"
 
 using namespace geolocation::command;
 
