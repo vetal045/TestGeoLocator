@@ -12,7 +12,7 @@ using namespace geolocation::interfaces;
 class MockCommandHandler : public ICommandHandler {
 public:
     std::string handle(const ParsedCommand& command) override {
-        return "OK\n"; // Всегда OK, независимо от команды
+        return "OK\n";
     }
 };
 
